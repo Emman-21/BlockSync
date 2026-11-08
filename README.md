@@ -10,11 +10,8 @@
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-itnt3108--block--system.web.app-6366F1?style=for-the-badge)](https://itnt3108-block-system.web.app)
 
-<b>Programming Languages Used</b>
-<p><img src="https://skillicons.dev/icons?i=js,html,css&theme=dark" alt="JavaScript, HTML, CSS" /></p>
-
 <b>Frontend &amp; UI Design</b>
-<p><img src="https://skillicons.dev/icons?i=react,tailwind,vite&theme=dark" alt="React, Tailwind CSS, Vite" /></p>
+<p><img src="https://skillicons.dev/icons?i=js,html,css,react,tailwind,vite&theme=dark" alt="React, Tailwind CSS, Vite" /></p>
 
 <b>Data, Backend &amp; Dev Tools</b>
 <p><img src="https://skillicons.dev/icons?i=firebase,nodejs,git,github,vscode&theme=dark" alt="Firebase, Node.js, Git, GitHub, VS Code" /></p>
