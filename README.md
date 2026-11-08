@@ -2,9 +2,9 @@
 
 <img src="docs/media/blocksync-demo.gif" alt="BlockSync app demo" width="100%" />
 
-# 🧱 BlockSync
+# 🦜🎓 BlockSync
 
-### IT-NT 3108 Block Management System
+### --- One Block, Always Connected ---
 
 **One place for your block's announcements, schedules, deadlines, events, and more.**
 
@@ -29,9 +29,7 @@
 
 It works as an installable **PWA**, so it keeps working even when your connection doesn't.
 
-## 📖🦜 BlockSync
-
-### System Versions Evolution
+## 💫 System Versions Evolution
 
 - **☁️ v0.1.0** — Added a Cloudinary gallery for uploading and managing images.
 - **🔄 v0.2.0** — Introduced Make.com automation and Google Classroom integration.
