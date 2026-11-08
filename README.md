@@ -138,16 +138,6 @@ Once the development server starts, open:
 
 **http://localhost:5174**
 
-### 🌐 Want to try BlockSync without installing anything?
-
-You can access the hosted application directly:
-
-**[Launch BlockSync](https://itnt3108-block-system.web.app)**
-
-No cloning, installation, or local configuration required!
-
----
-
 ## 📴 Offline Behavior
 
 BlockSync opens straight away with no device-mode prompt. A device with no saved preference uses **session-only storage** by default. Firestore saves previously fetched records only if persistent storage was already enabled on that device. The service worker saves the app shell and route code.
