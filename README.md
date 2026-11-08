@@ -55,6 +55,39 @@ It works as an installable **PWA**, so it keeps working even when your connectio
 
 ---
 
+## 📂 Project Structure
+
+<details>
+<summary><b>Click to expand project structure</b></summary>
+
+```text
+BlockSync/
+├── public/                    Static files and PWA icons
+├── src/                       Application code
+│   ├── pages/                 App screens
+│   ├── components/            Reusable UI grouped by feature
+│   ├── store/                 Zustand state
+│   ├── services/              Firebase, Cloudinary and AI integrations
+│   ├── offline/               Offline storage and drafts
+│   ├── context/               Auth, theme and toast providers
+│   ├── hooks/                 Shared React hooks
+│   ├── config/                Firebase and branding configuration
+│   ├── utils/                 Shared helpers
+│   └── styles/                Global styles
+├── worker/                    Cloudflare Worker add-on
+├── scripts/                   Project helper scripts
+├── tests/                     Tests and fixtures
+├── docs/media/                README demo GIF
+├── firestore.rules            Firestore security rules
+├── firebase.json              Firebase Hosting configuration
+├── package.json               Scripts and dependencies
+└── vite.config.js             Vite and PWA configuration
+```
+
+</details>
+
+---
+
 ## 🚀 Getting Started
 
 ### Requirements
