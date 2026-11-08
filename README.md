@@ -130,10 +130,6 @@ Open the `.env` file and configure the required Firebase settings and other cred
 
 ``npm run dev``
 
-Once the development server starts, open:
-
-**http://localhost:5174**
-
 ---
 
 ## 📴 Offline Behavior
