@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/media/blocksync-demo.gif" alt="BlockSync app demo" width="100%" />
+
 # 🧱 BlockSync
 
 ### IT-NT 3108 Block Management System
