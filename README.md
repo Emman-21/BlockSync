@@ -2,7 +2,7 @@
 
 <img src="docs/media/blocksync-demo.gif" alt="BlockSync app demo" width="100%" />
 
-# 🦜🎓 BlockSync
+# 🦜 BlockSync 🎓
 
 ### --- One Block, Always Connected ---
 
@@ -14,7 +14,7 @@
 <p><img src="https://skillicons.dev/icons?i=js,html,css,react,tailwind,vite&theme=dark" alt="React, Tailwind CSS, Vite" /></p>
 
 <b>Data, Backend &amp; Dev Tools</b>
-<p><img src="https://skillicons.dev/icons?i=firebase,nodejs,git,github,vscode&theme=dark" alt="Firebase, Node.js, Git, GitHub, VS Code" /></p>
+<p><img src="https://skillicons.dev/icons?i=firebase,googlecloud,cloudflare,nodejs,git,github,vscode&theme=dark" alt="Firebase, googlecloud, cloudflare, Node.js, Git, GitHub, VS Code" /></p>
 
 [✨ Features](#-features) · [🚀 Getting Started](#-getting-started) · [📴 Offline Mode](#-offline-behavior) · [🔥 Firebase Setup](#-firebase--deployment) · [🧪 Verification](#-verification)
 
@@ -42,6 +42,7 @@ It works as an installable **PWA**, so it keeps working even when your connectio
 
 | | Feature | What it does |
 | :-: | --- | --- |
+| 📊 | **Dashboard** | Number of deadline, status and sneak peek tracking |
 | 📢 | **Announcements** | Block-wide updates in one feed |
 | 🗓️ | **Schedules** | Class and exam schedules |
 | ⏰ | **Deadlines** | Track what's due, with a personal checklist |
@@ -99,48 +100,51 @@ BlockSync/
 
 ## 🚀 Getting Started
 
-### Requirements
+Want to explore BlockSync or run it on your local machine? Follow these simple steps!
 
-- **Node.js 22 or newer**
-- **npm**
-- A Firebase project
+### 1. Clone the repository
 
-### 1. Install dependencies
+Open your terminal and run:
 
-```bash
-npm ci
-```
+""git clone https://github.com/Emman-21/BlockSync.git""
 
-### 2. Set up your environment
+### 2. Open the project folder
 
-For a fresh checkout, copy the example file and fill in your Firebase web config (plus any Cloudinary or Worker config your project uses):
 
-```bash
-cp .env.example .env
-```
+""cd BlockSync""
 
-> 💡 If you already have a `.env`, keep it when merging updates. Credentials are never included in the repo.
+### 3. Install dependencies
 
-### 3. Run the dev server
+""npm install""
 
-```bash
+
+### 4. Configure environment variables
+
+Create your environment file using the example:
+
+"" cp .env.example .env ""
+
+Open the `.env` file and configure the required Firebase settings and other credentials used by the project.
+
+> 💡 **Note:** You need Node.js and npm installed to run the project locally. Never share or commit your actual `.env` credentials.
+
+### 5. Start BlockSync
+
+\`\`\`bash
 npm run dev
-```
+\`\`\`
 
-Opens at **http://localhost:5174** (Vite's default).
+Once the development server starts, open:
 
-### 4. Test a production build
+**http://localhost:5174**
 
-```bash
-npm test
-npm run lint
-npm run build
-npm run preview
-```
+### 🌐 Want to try BlockSync without installing anything?
 
-Preview runs at **http://localhost:4174**. If the port is taken, use the URL Vite prints.
+You can access the hosted application directly:
 
-> ⚠️ PWA caching only works on **HTTPS or localhost**. The dev server does not register the production service worker.
+**[Launch BlockSync](https://itnt3108-block-system.web.app)**
+
+No cloning, installation, or local configuration required!
 
 ---
 
@@ -307,8 +311,3 @@ See [`IMPLEMENTATION.md`](./IMPLEMENTATION.md) for changes, test results, and re
 
 ---
 
-<div align="center">
-
-[🌐 Visit the live site](https://itnt3108-block-system.web.app)
-
-</div>
