@@ -199,7 +199,7 @@ BlockSync opens straight away with no device-mode prompt. A device with no saved
 
 ## 🔥 Firebase & Deployment
 
-### Authentication
+### 🪪 Authentication
 
 | User | Method |
 | --- | --- |
