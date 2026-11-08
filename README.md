@@ -310,8 +310,6 @@ See [`IMPLEMENTATION.md`](./IMPLEMENTATION.md) for changes, test results, and re
 
 <div align="center">
 
-**Built for IT-NT 3108** 💙
-
 [🌐 Visit the live site](https://itnt3108-block-system.web.app)
 
 </div>
