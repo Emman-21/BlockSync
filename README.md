@@ -106,23 +106,21 @@ Want to explore BlockSync or run it on your local machine? Follow these simple s
 
 Open your terminal and run:
 
-""git clone https://github.com/Emman-21/BlockSync.git""
+``git clone https://github.com/Emman-21/BlockSync.git``
 
 ### 2. Open the project folder
 
-
-""cd BlockSync""
+```cd BlockSync```
 
 ### 3. Install dependencies
 
-""npm install""
-
+```npm install```
 
 ### 4. Configure environment variables
 
 Create your environment file using the example:
 
-"" cp .env.example .env ""
+```cp .env.example .env```
 
 Open the `.env` file and configure the required Firebase settings and other credentials used by the project.
 
@@ -130,13 +128,13 @@ Open the `.env` file and configure the required Firebase settings and other cred
 
 ### 5. Start BlockSync
 
-\`\`\`bash
-npm run dev
-\`\`\`
+``npm run dev``
 
 Once the development server starts, open:
 
 **http://localhost:5174**
+
+---
 
 ## 📴 Offline Behavior
 
