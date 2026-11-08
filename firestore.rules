@@ -1,0 +1,474 @@
+rules_version = '2';
+
+// Personal checklist: studentProgress/{studentId}/deadlines/{deadlineId}
+// Required fields: status (not_started/in_progress/completed), source/sourceId
+// (canonical activity reference), updatedBy (current writer UID), updatedAt
+// (server timestamp). Roster profile and activity IDs are fixed by the path.
+// Anonymous name selection is not verified identity: devices choosing the same
+// roster profile share its checklist. This collection contains no submissions.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function hasUserProfile() {
+      return signedIn()
+        && exists(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        );
+    }
+
+    function isAdmin() {
+      return hasUserProfile()
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.role == 'admin'
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.active == true;
+    }
+
+    function isStudent() {
+      return signedIn()
+        && (
+          (
+            hasUserProfile()
+            && get(
+              /databases/$(database)/documents/users/$(request.auth.uid)
+            ).data.role == 'student'
+            && get(
+              /databases/$(database)/documents/users/$(request.auth.uid)
+            ).data.active == true
+          )
+          || request.auth.token.firebase.sign_in_provider == 'anonymous'
+        );
+    }
+
+    function validUsageCounters() {
+      let data = request.resource.data;
+
+      return signedIn()
+        && data.keys().hasOnly([
+          'day',
+          'reads',
+          'writes',
+          'deletes',
+          'updatedAt'
+        ])
+        && data.day is string
+        && data.day.size() == 10
+        && data.reads is int
+        && data.writes is int
+        && data.deletes is int
+        && data.reads >= 0
+        && data.writes >= 0
+        && data.deletes >= 0
+        && data.updatedAt is timestamp
+        && data.updatedAt == request.time;
+    }
+
+    function validUsageCreate() {
+      return validUsageCounters()
+        && request.resource.data.reads <= 500
+        && request.resource.data.writes <= 100
+        && request.resource.data.deletes <= 100;
+    }
+
+    function validUsageUpdate() {
+      return validUsageCounters()
+        && request.resource.data.day == resource.data.day
+        && request.resource.data.reads >= resource.data.reads
+        && request.resource.data.writes >= resource.data.writes
+        && request.resource.data.deletes >= resource.data.deletes
+        && request.resource.data.reads - resource.data.reads <= 500
+        && request.resource.data.writes - resource.data.writes <= 100
+        && request.resource.data.deletes - resource.data.deletes <= 100;
+    }
+
+    function validStudentAlbumCreate() {
+      let data = request.resource.data;
+
+      return isStudent()
+        && data.keys().hasAll([
+          'title',
+          'description',
+          'coverImage',
+          'photos',
+          'createdBy',
+          'createdByName',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title',
+          'description',
+          'coverImage',
+          'photos',
+          'createdBy',
+          'createdByName',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.createdBy == request.auth.uid
+        && data.createdByName is string
+        && data.createdByName.size() >= 1
+        && data.createdByName.size() <= 100
+        && data.title is string
+        && data.title.size() >= 1
+        && data.title.size() <= 150
+        && data.description is string
+        && data.description.size() <= 500
+        && data.coverImage is string
+        && data.photos is list
+        && data.photos.size() == 0
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function validStudentPhotoAppend() {
+      return isStudent()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['photos', 'updatedAt'])
+        && request.resource.data.photos is list
+        && request.resource.data.photos.size() > resource.data.photos.size()
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function validStudentPhotoDelete() {
+      let data = request.resource.data;
+
+      return isStudent()
+        && data.diff(resource.data).affectedKeys()
+          .hasOnly([
+            'photos',
+            'updatedAt',
+            'deletedPhoto'
+          ])
+        && data.photos is list
+        && data.photos.size() + 1 == resource.data.photos.size()
+        && data.updatedAt is timestamp
+        && data.deletedPhoto is map
+        && data.deletedPhoto.uploadedBy == request.auth.uid
+        && resource.data.photos.hasAny([
+          data.deletedPhoto
+        ])
+        && !data.photos.hasAny([
+          data.deletedPhoto
+        ]);
+    }
+
+    function validClassroomPlacement() {
+      return request.resource.data.placement is string
+        && request.resource.data.placement in [
+          'subject',
+          'announcement',
+          'deadline',
+          'hidden'
+        ];
+    }
+
+    function validClassroomPlacementUpdate() {
+      return isAdmin()
+        && validClassroomPlacement()
+        && request.resource.data
+          .diff(resource.data)
+          .affectedKeys()
+          .hasOnly([
+            'placement',
+            'placementUpdatedAt'
+          ])
+        && request.resource.data.placementUpdatedAt is timestamp
+        && request.resource.data.placementUpdatedAt == request.time;
+    }
+
+    function validAdminRequest() {
+      let data = request.resource.data;
+
+      return data.keys().hasAll([
+          'fullName',
+          'studentNumber',
+          'email',
+          'reason',
+          'status',
+          'requestedRole',
+          'createdAt',
+          'reviewedAt',
+          'reviewedBy'
+        ])
+        && data.keys().hasOnly([
+          'fullName',
+          'studentNumber',
+          'email',
+          'reason',
+          'status',
+          'requestedRole',
+          'createdAt',
+          'reviewedAt',
+          'reviewedBy'
+        ])
+        && data.fullName is string
+        && data.fullName.size() >= 3
+        && data.fullName.size() <= 100
+        && data.studentNumber is string
+        && data.studentNumber.size() >= 4
+        && data.studentNumber.size() <= 30
+        && data.email is string
+        && data.email.size() <= 150
+        && data.email.matches(
+          '^[A-Za-z0-9._%+-]+@g[.]batstate-u[.]edu[.]ph$'
+        )
+        && data.reason is string
+        && data.reason.size() >= 20
+        && data.reason.size() <= 500
+        && data.status == 'pending'
+        && data.requestedRole == 'admin'
+        && data.createdAt is timestamp
+        && data.createdAt == request.time
+        && data.reviewedAt == null
+        && data.reviewedBy == null;
+    }
+
+    function validReaction() {
+      let data = request.resource.data;
+
+      return signedIn()
+        && data.keys().hasAll([
+          'announcementId',
+          'actorId',
+          'authorName',
+          'type',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'announcementId',
+          'actorId',
+          'authorName',
+          'type',
+          'updatedAt'
+        ])
+        && data.announcementId is string
+        && data.announcementId.size() >= 1
+        && data.announcementId.size() <= 200
+        && data.actorId is string
+        && data.actorId.size() >= 1
+        && data.actorId.size() <= 200
+        && data.actorId == request.auth.uid
+        && data.authorName is string
+        && data.authorName.size() >= 1
+        && data.authorName.size() <= 100
+        && data.type in [
+          '👍',
+          '❤️',
+          '😂',
+          '😮',
+          '😢',
+          '😡',
+          'none'
+        ]
+        && data.updatedAt is timestamp
+        && data.updatedAt == request.time
+        && exists(
+          /databases/$(database)/documents/announcements/$(data.announcementId)
+        );
+    }
+
+    function validComment() {
+      let data = request.resource.data;
+
+      return signedIn()
+        && data.keys().hasAll([
+          'announcementId',
+          'actorId',
+          'authorName',
+          'content',
+          'timestamp'
+        ])
+        && data.keys().hasOnly([
+          'announcementId',
+          'actorId',
+          'authorName',
+          'content',
+          'timestamp'
+        ])
+        && data.announcementId is string
+        && data.announcementId.size() >= 1
+        && data.announcementId.size() <= 200
+        && data.actorId is string
+        && data.actorId.size() >= 1
+        && data.actorId.size() <= 200
+        && data.actorId == request.auth.uid
+        && data.authorName is string
+        && data.authorName.size() >= 1
+        && data.authorName.size() <= 100
+        && data.content is string
+        && data.content.size() >= 1
+        && data.content.size() <= 500
+        && data.timestamp is timestamp
+        && data.timestamp == request.time
+        && exists(
+          /databases/$(database)/documents/announcements/$(data.announcementId)
+        );
+    }
+
+    match /classroomContents/{contentId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if validClassroomPlacementUpdate();
+    }
+
+    match /announcements/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /deadlines/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /events/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /gallery_albums/{document=**} {
+      allow read: if true;
+      allow create: if isAdmin() || validStudentAlbumCreate();
+
+      allow update: if isAdmin()
+        || validStudentPhotoAppend()
+        || validStudentPhotoDelete();
+
+      allow delete: if isAdmin();
+    }
+
+    match /organizations/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /reactions/{reactionId} {
+      allow read: if true;
+      allow create, update: if validReaction();
+
+      allow delete: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.actorId == request.auth.uid
+        );
+    }
+
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if validComment();
+      allow update: if false;
+
+      allow delete: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.actorId == request.auth.uid
+        );
+    }
+
+    match /schedules/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /students/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /subjects/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /semesters/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /systemSettings/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow get:
+        if signedIn()
+        && request.auth.uid == userId;
+
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /adminRequests/{requestId} {
+      allow create: if validAdminRequest();
+      allow read, update, delete: if isAdmin();
+    }
+
+    function canUseStudentProgress(studentId) {
+      return isStudent()
+        && exists(/databases/$(database)/documents/students/$(studentId))
+        && (
+          request.auth.token.firebase.sign_in_provider == 'anonymous'
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.studentId == studentId
+        );
+    }
+
+    function validProgressActivity(data, deadlineId) {
+      return data.sourceId is string
+        && data.sourceId.size() > 0
+        && data.sourceId.size() <= 500
+        && !data.sourceId.matches('.*[/].*')
+        && (
+          (data.source == 'deadlines'
+            && deadlineId == data.sourceId
+            && exists(/databases/$(database)/documents/deadlines/$(data.sourceId)))
+          || (data.source == 'classroomContents'
+            && deadlineId == 'classroom-' + data.sourceId
+            && get(/databases/$(database)/documents/classroomContents/$(data.sourceId)).data.contentType == 'coursework')
+          || (data.source == 'schedules'
+            && deadlineId == 'exam-schedule-' + data.sourceId
+            && get(/databases/$(database)/documents/schedules/$(data.sourceId)).data.scheduleKind == 'exam')
+        );
+    }
+
+    function validStudentProgress(deadlineId) {
+      let data = request.resource.data;
+      return data.keys().hasAll(['status', 'source', 'sourceId', 'updatedBy', 'updatedAt'])
+        && data.keys().hasOnly(['status', 'source', 'sourceId', 'updatedBy', 'updatedAt'])
+        && data.status in ['not_started', 'in_progress', 'completed']
+        && data.updatedBy == request.auth.uid
+        && data.updatedAt is timestamp
+        && data.updatedAt == request.time
+        && validProgressActivity(data, deadlineId);
+    }
+
+    match /studentProgress/{studentId}/deadlines/{deadlineId} {
+      allow read: if isAdmin() || canUseStudentProgress(studentId);
+      allow create, update: if canUseStudentProgress(studentId)
+        && validStudentProgress(deadlineId);
+      allow delete: if isAdmin();
+    }
+
+    match /submissions/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /firebaseUsageDaily/{day} {
+      allow read: if isAdmin();
+      allow create: if validUsageCreate();
+      allow update: if validUsageUpdate();
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

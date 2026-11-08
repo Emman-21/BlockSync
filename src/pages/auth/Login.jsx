@@ -1,0 +1,459 @@
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Eye,
+  EyeOff,
+  GraduationCap,
+  LoaderCircle,
+  Lock,
+  Mail,
+  Search,
+  ShieldCheck,
+  UserPlus,
+  UserRound,
+} from "lucide-react";
+import AuthLayout from "../../components/layout/AuthLayout";
+import Button from "../../components/ui/Button";
+import { useAuth } from "../../context/AuthContext";
+import { useStudentsStore } from "../../store/useStudentsStore";
+
+export default function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const {
+    user,
+    authLoading,
+    loginAdmin,
+    loginStudent,
+    resetPassword,
+  } = useAuth();
+  const {
+    students,
+    load: loadStudents,
+    loading: studentsLoading,
+  } = useStudentsStore();
+
+  const [role, setRole] = useState("student");
+  const [studentSearch, setStudentSearch] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  const redirectTo = location.state?.from?.pathname || "/dashboard";
+
+  useEffect(() => {
+    const unsubscribe = loadStudents();
+    return typeof unsubscribe === "function" ? unsubscribe : undefined;
+  }, [loadStudents]);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(redirectTo, { replace: true });
+    }
+  }, [authLoading, navigate, redirectTo, user]);
+
+  const studentProfiles = useMemo(() => {
+    return students
+      .filter((student) => student.id && student.name?.trim())
+      .map((student) => ({
+        ...student,
+        name: student.name.trim(),
+      }))
+      .sort((first, second) => first.name.localeCompare(second.name));
+  }, [students]);
+
+  const filteredStudents = useMemo(() => {
+    const query = studentSearch.trim().toLowerCase();
+
+    if (!query) return studentProfiles.slice(0, 8);
+
+    return studentProfiles
+      .filter((student) =>
+        student.name
+          .toLowerCase()
+          .includes(query)
+      )
+      .slice(0, 10);
+  }, [studentProfiles, studentSearch]);
+
+  const selectRole = (nextRole) => {
+    setRole(nextRole);
+    setMessage(null);
+    setStudentSearch("");
+    setSelectedStudent(null);
+    setEmail("");
+    setPassword("");
+    setShowPassword(false);
+  };
+
+  const selectStudent = (student) => {
+    setStudentSearch(student.name);
+    setSelectedStudent(student);
+    setMessage(null);
+  };
+
+  const handleStudentSearchChange = (event) => {
+    const value = event.target.value;
+    const normalizedValue = value.trim().toLowerCase();
+    const exactMatch = studentProfiles.find(
+      (student) =>
+        student.name.toLowerCase() === normalizedValue
+    );
+
+    setStudentSearch(value);
+    setSelectedStudent(exactMatch || null);
+    setMessage(null);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (submitting) {
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage(null);
+
+    try {
+      if (role === "student") {
+        if (!selectedStudent) {
+          throw new Error(
+            "Select your registered name from the list."
+          );
+        }
+
+        await loginStudent(selectedStudent);
+      } else {
+        await loginAdmin(email, password);
+      }
+
+      navigate(redirectTo, {
+        replace: true,
+      });
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text:
+          error.message ||
+          "Login failed. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (resettingPassword) return;
+
+    setResettingPassword(true);
+    setMessage(null);
+
+    try {
+      await resetPassword(email);
+      setMessage({
+        type: "success",
+        text: "Password reset email sent. Check your inbox and spam folder.",
+      });
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error.message || "Unable to send the password reset email.",
+      });
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <AuthLayout>
+        <div className="flex min-h-56 flex-col items-center justify-center text-center">
+          <LoaderCircle className="h-7 w-7 animate-spin text-accent" />
+          <p className="mt-3 text-sm text-text-secondary">
+            Checking your session...
+          </p>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  return (
+    <AuthLayout>
+      <div className="mb-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent"
+        >
+          <GraduationCap className="h-7 w-7" />
+        </motion.div>
+        <h1 className="font-display text-2xl font-semibold text-text-primary">
+          Welcome Back
+        </h1>
+        <p className="mt-1 text-sm text-text-secondary">
+          Enter your Block Information System
+        </p>
+      </div>
+
+      <div className="mb-6 grid grid-cols-2 rounded-2xl bg-bg-muted p-1.5">
+        <button
+          type="button"
+          onClick={() => selectRole("student")}
+          className={`relative flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+            role === "student"
+              ? "text-white"
+              : "text-text-secondary hover:text-text-primary"
+          }`}
+        >
+          {role === "student" && (
+            <motion.span
+              layoutId="login-role-background"
+              className="absolute inset-0 rounded-xl bg-accent shadow-sm"
+              transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            />
+          )}
+          <UserRound className="relative h-4 w-4" />
+          <span className="relative">Student</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => selectRole("admin")}
+          className={`relative flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+            role === "admin"
+              ? "text-white"
+              : "text-text-secondary hover:text-text-primary"
+          }`}
+        >
+          {role === "admin" && (
+            <motion.span
+              layoutId="login-role-background"
+              className="absolute inset-0 rounded-xl bg-accent shadow-sm"
+              transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            />
+          )}
+          <ShieldCheck className="relative h-4 w-4" />
+          <span className="relative">Admin</span>
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <AnimatePresence mode="wait" initial={false}>
+          {role === "student" ? (
+            <motion.div
+              key="student-login"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-4"
+            >
+              <div>
+                <label
+                  htmlFor="student-name"
+                  className="mb-1.5 block text-xs font-semibold text-text-secondary"
+                >
+                  Search your registered name
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-text-secondary" />
+                  <input
+                    id="student-name"
+                    type="text"
+                    value={studentSearch}
+                    onChange={handleStudentSearchChange}
+                    placeholder="Type your full name..."
+                    autoComplete="off"
+                    className="w-full rounded-xl bg-bg-muted py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus-visible:outline-2 focus-visible:outline-accent"
+                  />
+                </div>
+
+                {studentsLoading ? (
+                  <p className="mt-2 flex items-center gap-2 text-xs text-text-secondary">
+                    <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                    Loading registered students...
+                  </p>
+                ) : filteredStudents.length > 0 ? (
+                  <div className="mt-2 max-h-44 space-y-1 overflow-y-auto rounded-xl border border-border bg-bg-surface p-1.5">
+                    {filteredStudents.map((student) => {
+                      const selected = selectedStudent?.id === student.id;
+
+                      return (
+                        <button
+                          key={student.id}
+                          type="button"
+                          onClick={() => selectStudent(student)}
+                          className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                            selected
+                              ? "bg-accent-soft font-semibold text-accent"
+                              : "text-text-primary hover:bg-bg-muted"
+                          }`}
+                        >
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg-muted text-xs font-bold uppercase text-text-secondary">
+                            {student.name.charAt(0)}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate">{student.name}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-text-secondary">
+                    No matching registered student found.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-start gap-2 rounded-xl bg-blue-500/10 px-3 py-2.5 text-xs leading-5 text-blue-700 dark:text-blue-300">
+                <UserRound className="mt-0.5 h-4 w-4 shrink-0" />
+                Students do not need an account. Select your registered name to
+                view block and school updates.
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="admin-login"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-4"
+            >
+              <div>
+                <label
+                  htmlFor="admin-email"
+                  className="mb-1.5 block text-xs font-semibold text-text-secondary"
+                >
+                  Admin email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
+                  <input
+                    id="admin-email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      setMessage(null);
+                    }}
+                    placeholder="admin@example.com"
+                    autoComplete="email"
+                    required
+                    className="w-full rounded-xl bg-bg-muted py-2.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus-visible:outline-2 focus-visible:outline-accent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <label
+                    htmlFor="admin-password"
+                    className="text-xs font-semibold text-text-secondary"
+                  >
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handlePasswordReset}
+                    disabled={resettingPassword}
+                    className="text-xs font-semibold text-accent hover:underline disabled:opacity-50"
+                  >
+                    {resettingPassword ? "Sending..." : "Forgot password?"}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
+                  <input
+                    id="admin-password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      setMessage(null);
+                    }}
+                    placeholder="Enter your Firebase password"
+                    autoComplete="current-password"
+                    required
+                    className="w-full rounded-xl bg-bg-muted py-2.5 pl-9 pr-10 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus-visible:outline-2 focus-visible:outline-accent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md text-text-secondary transition-colors hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2 rounded-xl bg-emerald-500/10 px-3 py-2.5 text-xs leading-5 text-emerald-700 dark:text-emerald-300">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+                Admin access is verified by Firebase Authentication and your
+                Firestore admin profile.
+              </div>
+
+              <div className="rounded-2xl border border-border bg-bg-muted/50 p-4 text-center">
+                <p className="text-sm font-semibold text-text-primary">
+                  Want to be an admin?
+                </p>
+                <p className="mt-1 text-xs leading-5 text-text-secondary">
+                  Use your BatStateU Google Workspace account when requesting
+                  access. Never reuse the password from your school, social
+                  media, or personal accounts.
+                </p>
+                <Link
+                  to="/request-admin"
+                  className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent-soft px-4 py-2 text-xs font-semibold text-accent transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Request admin access
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {message && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            role={message.type === "error" ? "alert" : "status"}
+            className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${
+              message.type === "success"
+                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300"
+            }`}
+          >
+            {message.text}
+          </motion.div>
+        )}
+
+        <Button
+          type="submit"
+          className="flex w-full items-center justify-center gap-2"
+          disabled={submitting || studentsLoading}
+        >
+          {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
+          {submitting
+            ? "Signing in..."
+            : role === "admin"
+            ? "Sign in as admin"
+            : "Continue as student"}
+        </Button>
+      </form>
+    </AuthLayout>
+  );
+}
