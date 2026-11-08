@@ -10,12 +10,14 @@
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-itnt3108--block--system.web.app-6366F1?style=for-the-badge)](https://itnt3108-block-system.web.app)
 
-![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-Backend-FFCA28?style=flat-square&logo=firebase&logoColor=black)
-![PWA](https://img.shields.io/badge/PWA-Offline--ready-5A0FC8?style=flat-square&logo=pwa&logoColor=white)
-![Node](https://img.shields.io/badge/Node.js-22+-339933?style=flat-square&logo=nodedotjs&logoColor=white)
+<b>Programming Languages Used</b>
+<p><img src="https://skillicons.dev/icons?i=js,html,css&theme=dark" alt="JavaScript, HTML, CSS" /></p>
+
+<b>Frontend &amp; UI Design</b>
+<p><img src="https://skillicons.dev/icons?i=react,tailwind,vite&theme=dark" alt="React, Tailwind CSS, Vite" /></p>
+
+<b>Data, Backend &amp; Dev Tools</b>
+<p><img src="https://skillicons.dev/icons?i=firebase,nodejs,git,github,vscode&theme=dark" alt="Firebase, Node.js, Git, GitHub, VS Code" /></p>
 
 [✨ Features](#-features) · [🚀 Getting Started](#-getting-started) · [📴 Offline Mode](#-offline-behavior) · [🔥 Firebase Setup](#-firebase--deployment) · [🧪 Verification](#-verification)
 
