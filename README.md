@@ -29,6 +29,18 @@
 
 It works as an installable **PWA**, so it keeps working even when your connection doesn't.
 
+## 📖🦜 BlockSync
+
+### System Versions Evolution
+
+- **☁️ v0.1.0** — Added a Cloudinary gallery for uploading and managing images.
+- **🔄 v0.2.0** — Introduced Make.com automation and Google Classroom integration.
+- **📴 v0.3.0** — Added offline access to loaded data, local drafts, and app installation.
+- **🦜 v0.4.0** — Introduced Drumpyy, an animated AI assistant for subjects, instructors, schedules, deadlines, and events.
+- **✨ v0.5.0** — Renamed the app to BlockSync, with offline access and app installation.
+
+**More updates are coming. Stay tuned!**
+
 ## ✨ Features
 
 | | Feature | What it does |
