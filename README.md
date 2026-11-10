@@ -4,7 +4,7 @@
 
 # 🦜 BlockSync 🎓
 
-### --- One Block, Always Connected ---
+### "One Block, Always Connected"
 
 **One place for your block's announcements, schedules, deadlines, events, and more.**
 
