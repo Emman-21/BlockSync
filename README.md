@@ -287,11 +287,3 @@ npm run deploy:all    # Also deploys Firestore rules and indexes
 
 ---
 
-## 🧪 Verification
-
-See [`IMPLEMENTATION.md`](./IMPLEMENTATION.md) for changes, test results, and remaining live-service checks.
-
-> 📝 A production build warning remains for large existing application chunks and the optional 3D bundle.
-
----
-
